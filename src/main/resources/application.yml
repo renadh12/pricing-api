@@ -14,6 +14,10 @@ spring:
         max-idle: 50
         min-idle: 10
         max-wait: 1000ms
+  websocket:
+    message-size-limit: 128KB
+    send-buffer-size-limit: 512KB
+    send-time-limit: 20000
 
 management:
   endpoints:
@@ -27,5 +31,5 @@ management:
 
 logging:
   level:
-    com.visa.pricing: INFO
+    com.pricing: INFO
     org.springframework.data.redis: WARN
