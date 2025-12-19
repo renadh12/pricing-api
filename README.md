@@ -102,3 +102,39 @@ python3 producer.py --rate 1000 --duration 180
 # Benchmark #2: Low-Latency Reads (3 min)
 python3 benchmark_reads.py --rate 500 --duration 180
 ```
+
+<details>
+<summary>Sample Benchmark Results (Not Conclusive)</summary>
+
+**Test Environment:** MacBook Pro, Local Docker, 2-minute runs
+
+### Benchmark #1: High-Frequency Writes
+
+| Metric | Value |
+|--------|-------|
+| Duration | 120 seconds |
+| Messages Sent | 97,839 |
+| Actual Rate | 815 msg/sec |
+| Target Rate | 1,000 msg/sec |
+| Achievement | 81.5% |
+| Errors | 0 |
+
+### Benchmark #2: Low-Latency Reads
+
+| Metric | Value |
+|--------|-------|
+| Duration | 189 seconds |
+| Total Requests | 57,800 |
+| Success Rate | 100% |
+| Actual Rate | 306 req/sec |
+| Target Rate | 500 req/sec |
+| Achievement | 61.2% |
+
+**Latency:**
+- P50: 25ms
+- P95: 65ms
+- P99: 94ms
+
+**Note:** Results vary based on system resources. Run benchmarks on your machine for accurate metrics.
+
+</details>
