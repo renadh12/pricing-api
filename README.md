@@ -1,62 +1,97 @@
-# Pricing API - high frequency (updates per second) + low latency
+# Pricing API - High-Frequency System
 
+Real-time pricing system demonstrating high-frequency writes and low-latency reads.
 
-Updates per second for equity updates (high frequency for writes)
-Low latency (reads)
+## Architecture
 
-there is a UI
-consumed by different consumers (Application to Application)
- - Algorithmic Trading
- - Close to market prices
+### Data Flow
+```
+┌─────────────────┐      ┌──────────────────┐      ┌─────────────────┐
+│   Producer      │      │      Kafka       │      │    Consumer     │
+│   (Python)      │─────▶│  Message Broker  │─────▶│    (Python)     │
+│  Simulates      │      │  10 Partitions   │      │    (Docker)     │
+│  Market Data    │      │                  │      │                 │
+└─────────────────┘      └──────────────────┘      └────────┬────────┘
+   High-frequency                                            │
+   Price Updates                                             ▼
+                                                   ┌─────────────────┐
+                                                   │      Redis      │
+                                                   │  In-Memory Cache│
+                                                   │                 │
+                                                   └────────┬────────┘
+                                                            │
+                                                            ▼
+                  ┌──────────────┐              ┌────────────────────┐
+                  │   Clients    │              │   Pricing API      │
+                  │  - AlgoTrade │◀─────────────│   (Spring Boot)    │
+                  │  - Execution │     REST     │   Java 21          │
+                  │  - Smart     ây) | Low-latency cache |
+| **Pricing API** | Spring Boot 3.4 + Java 21 | REST endpoints for price lookups |
 
+### API Endpoints
 
-Smart Order Router - split the orders
+- `GET /api/v1/prices/{symbol}` - Single price lookup
+- `GET /api/v1/prices/batch?symbols=A,B,C` - Batch lookup (optimized with Redis MGET)
+- `GET /api/v1/prices/health` - Health check
 
-Requirements Analysis
+### Key Features
 
+- **Rate Limiting:** 10,000 req/sec capacity (Guava RateLimiter)
+- **Connection Pooling:** Redis Lettuce pool (100 max connections)
+- **Stateless API:** Horizontal scaling ready
+- **Replay Capability:** Kafka persistent log
 
-API - Springboot Fraemwork
+### Design Decisions
 
+**Kafka over direct writes:** Replay capability, producer/consumer decoupling, persistent log  
+**Python consumer:** Simpler than Kafka Connect, easy to understand and debug  
+**REST API:** Adequate for requirements, simpler client integration  
+**Blocking Redis:** Sufficient performance, cleaner code  
 
-10000 RPS
+### Future Optimizations
 
-#  Non blocking 
+1. **Reactive Redis:** Non-blocking I/O for lower latency
+2. **WebSocket:** Real-time streaming for UI/AlgoTrading
+3. **Redis Pipelining:** Batch operations for higher throughput
 
-CompleteableFuture.runAsync()
-return Result
-    completing the handling the write operation in background
-    use a callback/promise to handle the result 
+---
 
-low latency read
+## Quick Start (5 Minutes)
 
-Producer > Consumer (handle the backpressure)
+### Prerequisites
+- Docker Desktop
+- Java 21
+- Maven
+- Python 3.x
 
-Pricing API to enforce rate limiting  
+### Setup
+```bash
+# 1. Run automated setup
+./setup.sh
 
-Consumer side - message polling 10000
-               - 5 topics across 10 partitions 2k
+# 2. Start API (new terminal)
+cd pricing-api && mvn spring-boot:run
+```
 
-Throw in a Kafka Consumer
+Wait for: `Started PricingApiApplication`
 
-Tech Stack:
-    Feeder API --> Kafka < [Data Streaming source] > Redis
+### Benchmark
+```bash
+# Benchmark #1: High-Frequency Writes (30 sec)
+python3 producer.py --rate 1000 --duration 30
 
-    UI -> reads 
-    Java Springboot Framework - 
-        Pricing API
-            - read GetMapping ()
-        Smart Order Router: ordering API (microservice)
-        AlgoTrading API (microservice)
-        Execution API ()
-    Kafka as an external resource
-    Data Persistence (Redis)
+# Benchmark #2: Low-Latency Reads (60 sec)
+python3 benchmark_reads.py --rate 500 --duration 60
+```
 
-    Single Responsiblity Pattern
+### Test API Manually
+```bash
+# Single price
+curl http://localhost:8080/api/v1/prices/AAPL
 
+# Batch prices
+curl "http://localhost:8080/api/v1/prices/batch?symbols=AAPL,GOOGL,MSFT"
 
-    User Flow
-
-
-
-
-
+# Health check
+curl http://localhost:8080/api/v1/prices/health
+```
