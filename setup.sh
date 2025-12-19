@@ -41,9 +41,7 @@ docker exec kafka kafka-topics --create \
 # Build Spring Boot app
 echo ""
 echo "Building Pricing API..."
-cd pricing-api
 mvn clean install -q -DskipTests
-cd ..
 
 echo ""
 echo "========================================="
@@ -53,11 +51,11 @@ echo ""
 echo "Next steps:"
 echo ""
 echo "  1. Start API (in new terminal):"
-echo "     cd pricing-api && mvn spring-boot:run"
+echo "     mvn spring-boot:run"
 echo ""
 echo "  2. Run Benchmark #1 - High-Frequency Writes:"
-echo "     python3 producer.py --rate 1000 --duration 30"
+echo "     python3 producer.py --rate 1000 --duration 180"
 echo ""
 echo "  3. Run Benchmark #2 - Low-Latency Reads:"
-echo "     python3 benchmark_reads.py --rate 500 --duration 60"
+echo "     python3 benchmark_reads.py --rate 500 --duration 180"
 echo ""

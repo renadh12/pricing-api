@@ -66,32 +66,39 @@ Real-time pricing system demonstrating high-frequency writes and low-latency rea
 
 ### Setup
 ```bash
-# 1. Run automated setup
+# Clone repository
+git clone https://github.com/renadh12/pricing-api.git
+cd pricing-api
+
+# Run automated setup
 ./setup.sh
 
-# 2. Start API (new terminal)
-cd pricing-api && mvn spring-boot:run
+# Start API (new terminal)
+mvn spring-boot:run
 ```
 
 Wait for: `Started PricingApiApplication`
 
-### Benchmark
+### Validate Setup
 ```bash
-# Benchmark #1: High-Frequency Writes (30 sec)
-python3 producer.py --rate 1000 --duration 30
+# Check Docker containers are running
+docker ps
 
-# Benchmark #2: Low-Latency Reads (60 sec)
-python3 benchmark_reads.py --rate 500 --duration 60
-```
+# Test API health
+curl http://localhost:8080/api/v1/prices/health
 
-### Test API Manually
-```bash
-# Single price
+# Test single price (after running producer)
 curl http://localhost:8080/api/v1/prices/AAPL
 
-# Batch prices
+# Test batch prices (after running producer)
 curl "http://localhost:8080/api/v1/prices/batch?symbols=AAPL,GOOGL,MSFT"
+```
 
-# Health check
-curl http://localhost:8080/api/v1/prices/health
+### Benchmark
+```bash
+# Benchmark #1: High-Frequency Writes (3 min)
+python3 producer.py --rate 1000 --duration 180
+
+# Benchmark #2: Low-Latency Reads (3 min)
+python3 benchmark_reads.py --rate 500 --duration 180
 ```
