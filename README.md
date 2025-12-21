@@ -68,7 +68,7 @@ Real-time pricing system demonstrating high-frequency writes and low-latency rea
 
 ---
 
-## Quick Start (5 Minutes)
+## Quick Start
 
 ### Prerequisites
 - Docker Desktop
