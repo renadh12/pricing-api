@@ -25,13 +25,26 @@ Real-time pricing system demonstrating high-frequency writes and low-latency rea
                   │   Clients    │              │   Pricing API      │
                   │  - AlgoTrade │◀─────────────│   (Spring Boot)    │
                   │  - Execution │     REST     │   Java 21          │
-                  │  - Smart     ây) | Low-latency cache |
+                  │  - Smart     │              └────────────────────┘
+                  │    Order     │              
+                  │    Router    │
+                  └──────────────┘
+```
+
+### Components
+
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| **Producer** | Python + Kafka Client | Generate high-frequency price updates |
+| **Kafka** | Apache Kafka 7.5 | High-throughput message ingestion (10 partitions) |
+| **Consumer** | Python (Docker) | Bridge Kafka → Redis |
+| **Redis** | Redis 7 (in-memory) | Low-latency cache |
 | **Pricing API** | Spring Boot 3.4 + Java 21 | REST endpoints for price lookups |
 
 ### API Endpoints
 
 - `GET /api/v1/prices/{symbol}` - Single price lookup
-- `GET /api/v1/prices/batch?symbols=A,B,C` - Batch lookup (optimized with Redis MGET)
+- `GET /api/v1/prices/batch?symbols=A,B,C` - Batch lookup
 - `GET /api/v1/prices/health` - Health check
 
 ### Key Features
@@ -52,7 +65,6 @@ Real-time pricing system demonstrating high-frequency writes and low-latency rea
 
 1. **Reactive Redis:** Non-blocking I/O for lower latency
 2. **WebSocket:** Real-time streaming for UI/AlgoTrading
-3. **Redis Pipelining:** Batch operations for higher throughput
 
 ---
 
@@ -106,13 +118,13 @@ python3 benchmark_reads.py --rate 500 --duration 180
 <details>
 <summary>Sample Benchmark Results (Not Conclusive)</summary>
 
-**Test Environment:** MacBook Pro, Local Docker, 2-minute runs
+**Test Environment:** MacBook Pro, Local Docker, 3-minute runs
 
 ### Benchmark #1: High-Frequency Writes
 
 | Metric | Value |
 |--------|-------|
-| Duration | 120 seconds |
+| Duration | 180 seconds |
 | Messages Sent | 97,839 |
 | Actual Rate | 815 msg/sec |
 | Target Rate | 1,000 msg/sec |
@@ -123,7 +135,7 @@ python3 benchmark_reads.py --rate 500 --duration 180
 
 | Metric | Value |
 |--------|-------|
-| Duration | 189 seconds |
+| Duration | 180 seconds |
 | Total Requests | 57,800 |
 | Success Rate | 100% |
 | Actual Rate | 306 req/sec |
